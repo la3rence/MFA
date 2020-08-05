@@ -53,9 +53,9 @@ public class TestController {
 
     @GetMapping("/check")
     public Map<String, Object> check(@RequestParam String username, @RequestParam String codeInput) {
-        String secret = userSecret.get(username);
         HashMap<String, Object> json = new HashMap<>(4);
-        if (null != codeInput && codeInput.length() == 6) {
+        String secret = userSecret.get(username);
+        if (null != codeInput && codeInput.length() == 6 && null != secret) {
             long code = Long.parseLong(codeInput);
             boolean result = GoogleAuthenticator.checkCode(secret, code, System.currentTimeMillis());
             json.put("pass", result);
