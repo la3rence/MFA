@@ -34,14 +34,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--apache.codec:编码方法的工具类包
-        https://blog.csdn.net/u012881904/article/details/52767853-->
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>

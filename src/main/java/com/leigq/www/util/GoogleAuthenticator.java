@@ -10,54 +10,18 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-/**
- * GoogleAuthenticator
- * 参考：
- * <a href='https://blog.csdn.net/lizhengjava/article/details/76947962'>Google Authenticator 原理及Java实现<a/>
- * <br/>
- * <a href='https://blog.csdn.net/youanyyou/article/details/81937753'>两步验证杀手锏：Java 接入 Google 身份验证器实战<a/>
- * <p>
- * 自从google出了双重身份验证后，就方便了大家，等同于有了google一个级别的安全，但是我们该怎么使用google authenticator (双重身份验证)，
- * 下面是java的算法，这样大家都可以得到根据key得到公共的秘钥了,直接复制，记得导入JAR包：
- * commons-codec-1.8.jar
- * junit-4.10.jar
- * 创建人：LeiGQ <br>
- * 创建时间：2019-03-15 16:15 <br>
- * <p>
- * 修改人： <br>
- * 修改时间： <br>
- * 修改备注： <br>
- * </p>
- */
 @Slf4j
 public class GoogleAuthenticator {
-
+    private static final String ISSUER = "Hello";
+    private static final String IMAGE_QR_CODE_API = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=";
+    private static final String SEED = "thisisgoogleauthenticator";
     // taken from Google pam docs - we probably don't need to mess with these
-    private static final int SECRET_SIZE = 10;
-
-    // 种子， 有点像加盐
-    private static final String SEED = "g8GjEvTbW5oVSV7avLBdwIHqGlUYNzKFI7izOF8GwLDVKs2m0QN7vxRs2im5MDaNCWGmcD2rvcZx";
-
-    // 随机数字算法
     private static final String RANDOM_NUMBER_ALGORITHM = "SHA1PRNG";
-
-    private int window_size = 3; // default 3 - max 17 (from google docs)最多可偏移的时间
-
-    private void setWindowSize(int s) {
-        if (s >= 1 && s <= 17)
-            window_size = s;
-    }
+    private static final int SECRET_SIZE = 10;
+    private static final int WINDOW_SIZE = 1;
 
     /**
      * 生成密钥
-     * <br>创建人： leiGQ
-     * <br>创建时间： 2019-03-15 16:27
-     * <p>
-     * 修改人： <br>
-     * 修改时间： <br>
-     * 修改备注： <br>
-     * </p>
-     * <br>
      */
     public static String generateSecretKey() {
         try {
@@ -67,56 +31,42 @@ public class GoogleAuthenticator {
             Base32 codec = new Base32();
             byte[] bEncodedKey = codec.encode(buffer);
             return new String(bEncodedKey);
-        }catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             log.error("生成密钥异常：", e);
         }
         return null;
     }
 
-
     /**
-     * 获取QR条形码URL, 用这个生成二维码，给Google验证器扫
-     * <br>创建人： leiGQ
-     * <br>创建时间： 2019-03-15 16:29
-     * <p>
-     * 修改人： <br>
-     * 修改时间： <br>
-     * 修改备注： <br>
-     * </p>
-     * <br>
+     * 获取 QR Code
      */
     public static String getQRBarcodeURL(String user, String host, String secret) {
-        String format = "https://www.google.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=otpauth://totp/%s@%s%%3Fsecret%%3D%s";
-        return String.format(format, user, host, secret);
+        String format = IMAGE_QR_CODE_API + "otpauth://totp/%s@%s?secret=%s%%26issuer=%s";
+        String imageUrl = String.format(format, user, host, secret, ISSUER);
+        log.info(imageUrl);
+        return imageUrl;
     }
 
     /**
      * 验证码动态验证码
-     * <br>创建人： leiGQ
-     * <br>创建时间： 2019-03-15 16:31
-     * <p>
-     * 修改人： <br>
-     * 修改时间： <br>
-     * 修改备注： <br>
-     * </p>
-     * <br>
+     *
      * @param secret 密码，上面方法生成的
-     * @param code 动态验证码
-     * @param timeMsec 毫秒时间搓 System.currentTimeMillis()
+     * @param code   动态验证码
+     * @param time   毫秒时间戳
      */
-    public boolean checkCode(String secret, long code, long timeMsec) {
+    public static boolean checkCode(String secret, long code, long time) {
         Base32 codec = new Base32();
         byte[] decodedKey = codec.decode(secret);
         // convert unix msec time into a 30 second "window"
         // this is per the TOTP spec (see the RFC for details)
-        long t = (timeMsec / 1000L) / 30L;
+        long t = (time / 1000L) / 30L;
         // Window is used to check codes generated in the near past.
         // You can use this value to tune how far you're willing to go.
-        for (int i = -window_size; i <= window_size; ++i) {
+        for (int i = -WINDOW_SIZE; i <= WINDOW_SIZE; ++i) {
             long hash;
             try {
                 hash = verifyCode(decodedKey, t + i);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 // Yes, this is bad form - but
                 // the exceptions thrown would be rare and a static configuration problem
                 e.printStackTrace();
@@ -130,7 +80,6 @@ public class GoogleAuthenticator {
         // The validation code is invalid.
         return false;
     }
-
 
     private static int verifyCode(byte[] key, long t) throws NoSuchAlgorithmException, InvalidKeyException {
         byte[] data = new byte[8];
@@ -154,5 +103,8 @@ public class GoogleAuthenticator {
         truncatedHash &= 0x7FFFFFFF;
         truncatedHash %= 1000000;
         return (int) truncatedHash;
+    }
+
+    private GoogleAuthenticator() {
     }
 }
