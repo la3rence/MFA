@@ -12,11 +12,8 @@ public class GoogleAuthenticatorApplicationTests {
 
     @Test
     public void genSecretTest() {
-        // 生成密码
         String secret = GoogleAuthenticator.generateSecretKey();
-        // 生成二维码地址
-        // 帐户名建议使用自己 APP名称+APP账户(手机/邮箱)， 例如：WeChat-185882334545
-        String qrCode = GoogleAuthenticator.getQRBarcodeURL("username", "admin.mygymonline.cn", secret);
+        String qrCode = GoogleAuthenticator.getQRBarcodeURL("username", secret);
         System.out.println("二维码地址:" + qrCode);
         System.out.println("密钥:" + secret);
     }
@@ -28,8 +25,8 @@ public class GoogleAuthenticatorApplicationTests {
         // Google验证器动态验证码
         String randomCode = "892895";
         long code = Long.parseLong(randomCode);
-        boolean r = GoogleAuthenticator.checkCode(secret, code, System.currentTimeMillis());
-        System.out.println("动态验证码是否正确：" + r);
+        boolean result = GoogleAuthenticator.checkCode(secret, code, System.currentTimeMillis());
+        System.out.println("动态验证码是否正确：" + result);
     }
 
 }

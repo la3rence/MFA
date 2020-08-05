@@ -40,9 +40,9 @@ public class GoogleAuthenticator {
     /**
      * 获取 QR Code
      */
-    public static String getQRBarcodeURL(String user, String host, String secret) {
-        String format = IMAGE_QR_CODE_API + "otpauth://totp/%s@%s?secret=%s%%26issuer=%s";
-        String imageUrl = String.format(format, user, host, secret, ISSUER);
+    public static String getQRBarcodeURL(String user, String secret) {
+        String format = IMAGE_QR_CODE_API + "otpauth://totp/%s?secret=%s%%26issuer=%s";
+        String imageUrl = String.format(format, user, secret, ISSUER);
         log.info(imageUrl);
         return imageUrl;
     }

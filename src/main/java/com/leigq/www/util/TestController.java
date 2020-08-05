@@ -25,25 +25,22 @@ public class TestController {
     protected Map<String, String> userSecret = new ConcurrentHashMap<>();
 
     @GetMapping("/bind")
-    public Map<String, String> bind(@RequestParam String username,
-                                    @RequestParam(required = false, defaultValue = "example.com") String host) {
+    public Map<String, String> bind(@RequestParam String username) {
         HashMap<String, String> json = new HashMap<>(4);
         // 首先判断用户有没有绑定
         if (userSecret.containsKey(username)) {
             String secret = userSecret.get(username);
-            String qrCodeLink = GoogleAuthenticator.getQRBarcodeURL(username, host, secret);
+            String qrCodeLink = GoogleAuthenticator.getQRBarcodeURL(username, secret);
             json.put("qrCodeLink", qrCodeLink);
             json.put("user", username);
-            json.put("host", host);
             json.put("secret", secret);
             log.info(userSecret.toString());
             return json;
         }
         String secret = GoogleAuthenticator.generateSecretKey();
-        String qrCodeLink = GoogleAuthenticator.getQRBarcodeURL(username, host, secret);
+        String qrCodeLink = GoogleAuthenticator.getQRBarcodeURL(username, secret);
         json.put("qrCodeLink", qrCodeLink);
         json.put("user", username);
-        json.put("host", host);
         json.put("secret", secret);
         // 将 user 和 secret 一对一保存, 不让同一用户生成新的 secret
         userSecret.put(username, secret);
