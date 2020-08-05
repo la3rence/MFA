@@ -1,4 +1,4 @@
-package com.leigq.www.util;
+package com.auth.www.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base32;
@@ -11,18 +11,19 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 @Slf4j
-public class GoogleAuthenticator {
+public class MultiFactorAuthenticator {
+    // this is the issuer, you can change it to your company/project name.
     private static final String ISSUER = "Hello";
+    // this is a http api (GET request) to generate the QR code image to show in the website/app.
     private static final String IMAGE_QR_CODE_API = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=";
+    // you can change it to any string.
     private static final String SEED = "thisisgoogleauthenticator";
     // taken from Google pam docs - we probably don't need to mess with these
     private static final String RANDOM_NUMBER_ALGORITHM = "SHA1PRNG";
     private static final int SECRET_SIZE = 10;
+    // suggest: the smaller the value, the safer it is. (from 1 to 17)
     private static final int WINDOW_SIZE = 1;
 
-    /**
-     * 生成密钥
-     */
     public static String generateSecretKey() {
         try {
             SecureRandom sr = SecureRandom.getInstance(RANDOM_NUMBER_ALGORITHM);
@@ -32,14 +33,11 @@ public class GoogleAuthenticator {
             byte[] bEncodedKey = codec.encode(buffer);
             return new String(bEncodedKey);
         } catch (NoSuchAlgorithmException e) {
-            log.error("生成密钥异常：", e);
+            log.error("generate secret exception：{[]}", e);
         }
         return null;
     }
 
-    /**
-     * 获取 QR Code
-     */
     public static String getQRBarcodeURL(String user, String secret) {
         String format = IMAGE_QR_CODE_API + "otpauth://totp/%s?secret=%s%%26issuer=%s";
         String imageUrl = String.format(format, user, secret, ISSUER);
@@ -47,13 +45,6 @@ public class GoogleAuthenticator {
         return imageUrl;
     }
 
-    /**
-     * 验证码动态验证码
-     *
-     * @param secret 密码，上面方法生成的
-     * @param code   动态验证码
-     * @param time   毫秒时间戳
-     */
     public static boolean checkCode(String secret, long code, long time) {
         Base32 codec = new Base32();
         byte[] decodedKey = codec.decode(secret);
@@ -105,6 +96,6 @@ public class GoogleAuthenticator {
         return (int) truncatedHash;
     }
 
-    private GoogleAuthenticator() {
+    private MultiFactorAuthenticator() {
     }
 }

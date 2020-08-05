@@ -1,13 +1,13 @@
-package com.leigq.www;
+package com.auth.www;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GoogleAuthenticatorApplication {
+public class AuthenticatorApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(GoogleAuthenticatorApplication.class, args);
+        SpringApplication.run(AuthenticatorApplication.class, args);
     }
 
 }
