@@ -1,8 +1,7 @@
+# 使用 Java/Spring 接入身份验证器
+
 # Multi-Factor Authentication by Java with Spring
-
 多因素认证 ｜ 多因子认证 ｜ Google Authenticator ｜ 2FA ｜ MFA | 时间戳同步 ｜ Java实现 | Spring后端
-
-## 使用 Java / Spring 接入身份验证器
 
 ## 工具类
 
@@ -29,12 +28,12 @@
 启动此服务。
 用户下载、安装好客户端应用后，尝试发出此请求。
 ```shell script
-    curl -XGET localhost:8080/bind?username=test
+curl -XGET localhost:8080/bind?username=test
 ```
 将返回 JSON 中的二维码地址通过浏览器打开，或者使用 wget 等客户端下载到本地。
 使用客户端导入此二维码，或者填写密文导入。导入成功后，应用会出现相应的 6 位数验证码。
 将验证码作为以下 HTTP 请求的 codeInput 字段内容。
 ```shell script
-    curl -XGET localhost:8080/check?username=test&codeInput={codeInput}
+curl -XGET localhost:8080/check?username=test&codeInput={codeInput}
 ```
-返回的结果位 true 则验证成功。
+返回的结果为 true 则验证成功。
